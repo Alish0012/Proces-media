@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.local
+.next/
+dist/
+*.log
+
+# Gerçek/satılık eklenti dosyaları git'e (ve GitHub'a) gitmemeli — indirme
+# koruması bu dosyaların herkese açık olmamasına dayanıyor. Demo hariç tümü.
+server/uploads/*
+!server/uploads/.gitkeep
+!server/uploads/demo-eklenti/
+
+# Claude Code yerel ayarları (kişisel izin tercihleri, paylaşılmamalı)
+.claude/settings.local.json
