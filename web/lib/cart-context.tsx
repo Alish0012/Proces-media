@@ -9,6 +9,7 @@ export type CartItem = {
   price: number;
   currency: string;
   imageUrl?: string | null;
+  billingPeriod?: 'monthly' | 'yearly' | null;
 };
 
 type CartContextValue = {
@@ -40,8 +41,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items]);
 
+  // Aynı ürün tekrar eklenirse (ör. plan değiştirildiyse) eski girdinin yerine geçer —
+  // tek seferlik ürünler için bu, eskisiyle aynı olduğundan davranış değişmez.
   function addItem(item: CartItem) {
-    setItems((prev) => (prev.some((i) => i.productId === item.productId) ? prev : [...prev, item]));
+    setItems((prev) => [...prev.filter((i) => i.productId !== item.productId), item]);
   }
 
   function removeItem(productId: number) {

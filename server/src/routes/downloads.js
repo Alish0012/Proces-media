@@ -24,15 +24,21 @@ function resolveProductDir(filePath) {
   return resolved;
 }
 
-// Kullanıcının satın aldığı (paid) ürünleri listeler.
+// Kullanıcının satın aldığı (paid) ürünleri listeler. Abonelik ürünlerinde süresi
+// dolmuş olsa bile ürün listede kalır (active:false) — böylece kullanıcı "süresi doldu,
+// yeniden satın al" durumunu görebilir; tek seferlik ürünlerde active her zaman true'dur.
 router.get('/my-products', requireAuth, async (req, res, next) => {
   try {
     const { rows } = await db.query(
-      `SELECT DISTINCT p.id, p.slug, p.name, p.image_url, oi.order_id
+      `SELECT p.id, p.slug, p.name, p.image_url, p.is_subscription, l.license_key,
+              bool_or(oi.expires_at IS NULL OR oi.expires_at > now()) AS active,
+              MAX(oi.expires_at) FILTER (WHERE oi.expires_at IS NOT NULL) AS expires_at
        FROM order_items oi
        JOIN orders o ON o.id = oi.order_id
        JOIN products p ON p.id = oi.product_id
+       LEFT JOIN licenses l ON l.product_id = p.id AND l.user_id = o.user_id
        WHERE o.user_id = $1 AND o.status = 'paid'
+       GROUP BY p.id, p.slug, p.name, p.image_url, p.is_subscription, l.license_key
        ORDER BY p.id DESC`,
       [req.user.id]
     );
@@ -52,12 +58,26 @@ router.post('/:productId/token', requireAuth, async (req, res, next) => {
        FROM order_items oi
        JOIN orders o ON o.id = oi.order_id
        WHERE o.user_id = $1 AND oi.product_id = $2 AND o.status = 'paid'
+         AND (oi.expires_at IS NULL OR oi.expires_at > now())
        ORDER BY o.created_at DESC LIMIT 1`,
       [req.user.id, productId]
     );
 
     const purchase = rows[0];
     if (!purchase) {
+      // Aktif bir satın alma yok — hiç almamış mı yoksa süresi mi dolmuş ayırt edilir,
+      // böylece kullanıcıya doğru mesaj gösterilir.
+      const { rows: everPurchased } = await db.query(
+        `SELECT 1 FROM order_items oi JOIN orders o ON o.id = oi.order_id
+         WHERE o.user_id = $1 AND oi.product_id = $2 AND o.status = 'paid' LIMIT 1`,
+        [req.user.id, productId]
+      );
+      if (everPurchased[0]) {
+        return res.status(403).json({
+          error: 'Aboneliğinizin süresi doldu. Devam etmek için yeniden satın almanız gerekiyor.',
+          code: 'subscription_expired',
+        });
+      }
       return res.status(403).json({ error: 'Bu ürünü satın almadınız.' });
     }
 

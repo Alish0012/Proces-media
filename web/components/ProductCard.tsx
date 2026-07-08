@@ -11,6 +11,9 @@ export type Product = {
   price: number | string;
   currency: string;
   image_url?: string | null;
+  is_subscription?: boolean;
+  monthly_price?: number | string | null;
+  yearly_price?: number | string | null;
 };
 
 export default function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
@@ -44,7 +47,16 @@ export default function ProductCard({ product, index = 0 }: { product: Product; 
 
       <div className="mt-6 flex items-center justify-between">
         <span className="text-xl font-bold text-white">
-          {Number(product.price).toLocaleString('tr-TR')} {product.currency}
+          {product.is_subscription ? (
+            <>
+              {Number(product.monthly_price).toLocaleString('tr-TR')} {product.currency}
+              <span className="text-sm font-normal text-white/50"> /ay</span>
+            </>
+          ) : (
+            <>
+              {Number(product.price).toLocaleString('tr-TR')} {product.currency}
+            </>
+          )}
         </span>
         <Link
           href={`/urunler/${product.slug}`}

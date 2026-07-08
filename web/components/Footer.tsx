@@ -1,11 +1,13 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
     <footer className="border-t border-white/5 py-12">
       <div className="container-page flex flex-col items-center justify-between gap-6 text-sm text-white/50 md:flex-row">
         <div>
-          <p className="font-semibold text-white">
+          <p className="flex items-center gap-2 font-semibold text-white">
+            <Image src="/logo.png" alt="Proces Media" width={28} height={28} className="rounded-md" />
             Proces<span className="gradient-text">Media</span>
           </p>
           <p className="mt-1">© {new Date().getFullYear()} Proces Media. Tüm hakları saklıdır.</p>

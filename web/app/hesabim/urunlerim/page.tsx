@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import PageTransition from '@/components/PageTransition';
 import { useAuth } from '@/lib/auth-context';
@@ -12,7 +13,10 @@ type PurchasedProduct = {
   slug: string;
   name: string;
   image_url?: string | null;
-  order_id: number;
+  is_subscription?: boolean;
+  active?: boolean;
+  expires_at?: string | null;
+  license_key?: string | null;
 };
 
 export default function MyProductsPage() {
@@ -75,24 +79,46 @@ export default function MyProductsPage() {
           <p className="mt-12 text-white/50">Henüz satın alınmış bir ürün yok.</p>
         ) : (
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((p, i) => (
-              <motion.div
-                key={`${p.id}-${p.order_id}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.06 }}
-                className="card-glow p-6"
-              >
-                <h3 className="text-lg font-semibold text-white">{p.name}</h3>
-                <button
-                  onClick={() => handleDownload(p.id)}
-                  disabled={downloadingId === p.id}
-                  className="btn-primary mt-6 w-full disabled:opacity-50"
+            {products.map((p, i) => {
+              const expired = p.is_subscription && p.active === false;
+              return (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.06 }}
+                  className="card-glow p-6"
                 >
-                  {downloadingId === p.id ? 'Hazırlanıyor...' : 'İndir'}
-                </button>
-              </motion.div>
-            ))}
+                  <h3 className="text-lg font-semibold text-white">{p.name}</h3>
+                  {p.is_subscription && p.expires_at && (
+                    <p className={`mt-1 text-xs ${expired ? 'text-red-400' : 'text-white/40'}`}>
+                      {expired ? 'Süresi doldu: ' : 'Bitiş: '}
+                      {new Date(p.expires_at).toLocaleDateString('tr-TR')}
+                    </p>
+                  )}
+                  {p.is_subscription && p.license_key && (
+                    <p className="mt-2 text-xs text-white/40">
+                      Lisans anahtarı (eklentiye girin):
+                      <br />
+                      <span className="select-all font-mono text-sm text-white/80">{p.license_key}</span>
+                    </p>
+                  )}
+                  {expired ? (
+                    <Link href={`/urunler/${p.slug}`} className="btn-primary mt-6 block w-full text-center">
+                      Yeniden Satın Al
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => handleDownload(p.id)}
+                      disabled={downloadingId === p.id}
+                      className="btn-primary mt-6 w-full disabled:opacity-50"
+                    >
+                      {downloadingId === p.id ? 'Hazırlanıyor...' : 'İndir'}
+                    </button>
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </section>

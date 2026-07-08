@@ -6,7 +6,8 @@ const router = express.Router();
 router.get('/', async (req, res, next) => {
   try {
     const { rows } = await db.query(
-      `SELECT id, slug, name, description, price, currency, image_url, created_at
+      `SELECT id, slug, name, description, price, currency, image_url, created_at,
+              is_subscription, monthly_price, yearly_price
        FROM products ORDER BY created_at DESC`
     );
     res.json({ products: rows });
@@ -18,7 +19,8 @@ router.get('/', async (req, res, next) => {
 router.get('/:slug', async (req, res, next) => {
   try {
     const { rows } = await db.query(
-      `SELECT id, slug, name, description, price, currency, image_url, created_at
+      `SELECT id, slug, name, description, price, currency, image_url, created_at,
+              is_subscription, monthly_price, yearly_price
        FROM products WHERE slug = $1`,
       [req.params.slug]
     );

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/auth-context';
@@ -21,12 +22,13 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/5 bg-[#05060f]/80 backdrop-blur-md">
       <div className="container-page flex h-16 items-center justify-between">
-        <Link href="/" className="group text-lg font-bold tracking-tight">
+        <Link href="/" className="group flex items-center gap-2 text-lg font-bold tracking-tight">
           <motion.span
-            className="inline-block"
+            className="inline-flex items-center gap-2"
             whileHover={{ scale: 1.06, rotate: -2 }}
             transition={{ type: 'spring', stiffness: 300 }}
           >
+            <Image src="/logo.png" alt="Proces Media" width={36} height={36} className="rounded-lg" priority />
             Proces<span className="gradient-text">Media</span>
           </motion.span>
         </Link>

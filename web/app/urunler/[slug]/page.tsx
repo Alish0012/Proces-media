@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import PageTransition from '@/components/PageTransition';
 import AddToCartButton from '@/components/AddToCartButton';
+import SubscriptionPlanSelector from '@/components/SubscriptionPlanSelector';
 import type { Product } from '@/components/ProductCard';
 import { API_URL } from '@/lib/api';
 
@@ -40,13 +41,21 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <h1 className="text-3xl font-bold sm:text-4xl">{product.name}</h1>
           <p className="mt-4 text-lg leading-relaxed text-white/60">{product.description}</p>
 
-          <div className="mt-8 text-3xl font-bold text-white">
-            {Number(product.price).toLocaleString('tr-TR')} {product.currency}
-          </div>
+          {product.is_subscription ? (
+            <div className="mt-8">
+              <SubscriptionPlanSelector product={product} />
+            </div>
+          ) : (
+            <>
+              <div className="mt-8 text-3xl font-bold text-white">
+                {Number(product.price).toLocaleString('tr-TR')} {product.currency}
+              </div>
 
-          <div className="mt-8">
-            <AddToCartButton product={product} />
-          </div>
+              <div className="mt-8">
+                <AddToCartButton product={product} />
+              </div>
+            </>
+          )}
 
           <p className="mt-6 text-sm text-white/40">
             Satın alma sonrası ürün, hesabınıza bağlı &quot;Ürünlerim&quot; sayfasından indirilebilir.
