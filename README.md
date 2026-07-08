@@ -2,7 +2,7 @@
 
 Kayıt/giriş yapılabilen, eklenti (plugin) satışı yapan, bol animasyonlu full-stack web sitesi.
 
-- `server/` — Express + PostgreSQL API (auth, ürünler, siparişler, Shopier entegrasyonu, korumalı indirme)
+- `server/` — Express + PostgreSQL API (auth, ürünler, siparişler, iyzico entegrasyonu, korumalı indirme)
 - `web/` — Next.js (App Router) + Tailwind + Framer Motion frontend
 
 ## Kurulum
@@ -31,7 +31,8 @@ npm run dev                # http://localhost:4000
 - `APP_DATABASE_URL` — sunucu çalışırken kullanılan, kısıtlı yetkili `procesmedia_app` rolünün bağlantısı (bkz. aşağıdaki "Veritabanı güvenliği")
 - `JWT_SECRET` — en az 32 karakter rastgele bir string (`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` ile üretin) — kısa/tahmin edilebilir bir değerle sunucu açılışta hata verir
 - `SMTP_*` — şifre sıfırlama e-postalarını göndermek için (ör. Gmail uygulama şifresi)
-- `SHOPIER_API_KEY` / `SHOPIER_API_SECRET` / `SHOPIER_WEBSITE_INDEX` — Shopier mağaza panelinizden alınır
+- `IYZICO_API_KEY` / `IYZICO_SECRET_KEY` — iyzico mağaza panelinizden alınır (sandbox ve canlı için ayrı ayrı)
+- `IYZICO_BASE_URL` — test için `https://sandbox-api.iyzipay.com`, canlıda `https://api.iyzipay.com`
 
 ## Veritabanı güvenliği
 
@@ -74,17 +75,21 @@ Yeni bir eklenti eklemek için:
 1. Eklentinin dosyalarını `server/uploads/<urun-slug>/` klasörüne koyun.
 2. `products` tablosuna bir satır ekleyin (`file_path` = `uploads/<urun-slug>`), örnek: `server/src/seed.js`.
 
-## Ödeme akışı (Shopier)
+## Ödeme akışı (iyzico)
 
-Kullanıcı sepetten "Shopier ile Öde"ye bastığında `POST /api/orders` bir sipariş (`pending`) oluşturur ve
-Shopier ödeme formu alanlarını döner; frontend bu alanlarla otomatik bir form submit ederek kullanıcıyı
-Shopier'e yönlendirir. Ödeme sonrası Shopier, mağaza panelinde tanımlayacağınız
-`POST /api/shopier/callback` adresine bildirim gönderir; imza doğrulanınca sipariş `paid` olur.
+Kullanıcı sepette "Ödemeye Geç"e bastığında `POST /api/orders` bir sipariş (`pending`) oluşturur, iyzico'nun
+Checkout Form API'sini (`server/src/services/iyzico.js`) başlatır ve dönen `paymentPageUrl`'e yönlendirir.
+Kullanıcı iyzico'nun barındırdığı ödeme sayfasında kart bilgilerini girer; işlem tamamlanınca tarayıcı
+`POST /api/iyzico/callback` adresine yönlendirilir (bir `token` ile). Bu token'ın kendisi güvenilmez —
+sunucu, gerçek sonucu öğrenmek için iyzico'nun API'sine kendi `IYZICO_API_KEY`/`IYZICO_SECRET_KEY`'i ile
+sorar (`checkoutForm.retrieve`); yalnızca bu doğrulanmış yanıt `paymentStatus: 'SUCCESS'` dönerse sipariş
+`paid` olur. Kullanıcı sonrasında `/odeme-basarili` veya `/odeme-basarisiz` sayfasına yönlendirilir.
 
-**Önemli:** `server/src/services/shopier.js` içindeki form alanları, yaygın kullanılan Shopier Ödeme
-Formu API'sine göre yazıldı. Shopier hesabınızdan API anahtarlarını aldıktan sonra, mağaza panelindeki
-güncel API dokümantasyonuyla alan adlarını (özellikle `currency`, `current_language` kodları ve
-callback alanları) karşılaştırıp gerekirse güncelleyin.
+iyzico, dolandırıcılık kontrolü için alıcının TC Kimlik No ve telefon bilgisini zorunlu kılıyor — bu bilgi
+ödeme adımında bir kereliğine sorulup `users` tablosuna kaydedilir, sonraki alımlarda tekrar sorulmaz.
+
+**Önemli:** `IYZICO_BASE_URL` varsayılan olarak sandbox'a ayarlı — canlıya almadan önce
+`https://api.iyzipay.com` yapmayı ve sandbox'ta ayrı bir test hesabıyla uçtan uca denemeyi unutmayın.
 
 ## İndirme koruması
 

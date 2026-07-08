@@ -11,10 +11,7 @@ import { apiFetch, ApiError } from '@/lib/api';
 
 type CheckoutResponse = {
   orderId: number;
-  payment: {
-    postUrl: string;
-    fields: Record<string, string>;
-  };
+  paymentPageUrl: string;
 };
 
 export default function CartPage() {
@@ -23,6 +20,10 @@ export default function CartPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [identityNumber, setIdentityNumber] = useState('');
+  const [phone, setPhone] = useState('');
+
+  const needsBuyerInfo = !!user && (!user.identity_number || !user.phone);
 
   async function handleCheckout() {
     setError(null);
@@ -30,28 +31,26 @@ export default function CartPage() {
       router.push('/giris?next=/sepet');
       return;
     }
+    if (needsBuyerInfo && (!identityNumber.trim() || !phone.trim())) {
+      setError('Ödeme için TC Kimlik No ve telefon gereklidir.');
+      return;
+    }
     setLoading(true);
     try {
       const data = await apiFetch<CheckoutResponse>('/api/orders', {
         method: 'POST',
         token,
-        body: { items: items.map((i) => ({ productId: i.productId })) },
+        body: {
+          items: items.map((i) => ({
+            productId: i.productId,
+            ...(i.billingPeriod ? { billingPeriod: i.billingPeriod } : {}),
+          })),
+          ...(needsBuyerInfo ? { identityNumber: identityNumber.trim(), phone: phone.trim() } : {}),
+        },
       });
 
-      // Shopier ödeme formunu otomatik submit eden gizli bir form oluşturup yönlendiriyoruz.
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = data.payment.postUrl;
-      Object.entries(data.payment.fields).forEach(([key, value]) => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = String(value);
-        form.appendChild(input);
-      });
-      document.body.appendChild(form);
       clear();
-      form.submit();
+      window.location.href = data.paymentPageUrl;
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Sipariş oluşturulamadı.');
     } finally {
@@ -86,7 +85,14 @@ export default function CartPage() {
                     className="card-glow flex items-center justify-between p-5"
                   >
                     <div>
-                      <p className="font-medium text-white">{item.name}</p>
+                      <p className="font-medium text-white">
+                        {item.name}
+                        {item.billingPeriod && (
+                          <span className="ml-2 text-xs text-white/50">
+                            ({item.billingPeriod === 'monthly' ? 'Aylık' : 'Yıllık'})
+                          </span>
+                        )}
+                      </p>
                       <p className="text-sm text-white/50">
                         {item.price.toLocaleString('tr-TR')} {item.currency}
                       </p>
@@ -108,6 +114,35 @@ export default function CartPage() {
                 <span className="font-bold text-white">{total.toLocaleString('tr-TR')} TRY</span>
               </div>
 
+              {needsBuyerInfo && (
+                <div className="mt-6 space-y-3">
+                  <p className="text-xs text-white/40">
+                    Ödeme için (iyzico dolandırıcılık kontrolü amacıyla) bu bilgiler bir kereliğine
+                    gereklidir, hesabınıza kaydedilir.
+                  </p>
+                  <div>
+                    <label className="text-xs text-white/50">TC Kimlik No</label>
+                    <input
+                      type="text"
+                      value={identityNumber}
+                      onChange={(e) => setIdentityNumber(e.target.value)}
+                      className="mt-1 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-brand-400"
+                      maxLength={11}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-white/50">Telefon</label>
+                    <input
+                      type="text"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+90 5xx xxx xx xx"
+                      className="mt-1 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-brand-400"
+                    />
+                  </div>
+                </div>
+              )}
+
               {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
 
               <button
@@ -115,7 +150,7 @@ export default function CartPage() {
                 disabled={loading}
                 className="btn-accent mt-6 w-full disabled:opacity-50"
               >
-                {loading ? 'Yönlendiriliyor...' : 'Shopier ile Öde'}
+                {loading ? 'Yönlendiriliyor...' : 'Ödemeye Geç'}
               </button>
               {!user && (
                 <p className="mt-3 text-center text-xs text-white/40">

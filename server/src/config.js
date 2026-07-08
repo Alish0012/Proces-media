@@ -31,10 +31,13 @@ module.exports = {
     pass: process.env.SMTP_PASS,
     from: process.env.MAIL_FROM || 'Proces Media <no-reply@procesmedia.com>',
   },
-  shopier: {
-    apiKey: process.env.SHOPIER_API_KEY,
-    apiSecret: process.env.SHOPIER_API_SECRET,
-    websiteIndex: process.env.SHOPIER_WEBSITE_INDEX || '1',
+  ownerEmail: process.env.OWNER_EMAIL || null,
+  iyzico: {
+    apiKey: process.env.IYZICO_API_KEY,
+    secretKey: process.env.IYZICO_SECRET_KEY,
+    // Yanlışlıkla gerçek para hareketi olmasın diye varsayılan sandbox — canlıya
+    // alırken IYZICO_BASE_URL'i https://api.iyzipay.com yapmanız gerekir.
+    baseUrl: process.env.IYZICO_BASE_URL || 'https://sandbox-api.iyzipay.com',
   },
   downloadTokenTtlMinutes: Number(process.env.DOWNLOAD_TOKEN_TTL_MINUTES) || 10,
 };

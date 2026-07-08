@@ -76,9 +76,10 @@ router.post('/login', async (req, res, next) => {
 
 router.get('/me', requireAuth, async (req, res, next) => {
   try {
-    const { rows } = await db.query('SELECT id, email, name, created_at FROM users WHERE id = $1', [
-      req.user.id,
-    ]);
+    const { rows } = await db.query(
+      'SELECT id, email, name, identity_number, phone, created_at FROM users WHERE id = $1',
+      [req.user.id]
+    );
     if (!rows[0]) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
     res.json({ user: rows[0] });
   } catch (err) {

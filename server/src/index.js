@@ -8,8 +8,20 @@ const { apiLimiter, authLimiter } = require('./middleware/rateLimit');
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
-const shopierRoutes = require('./routes/shopier');
+const iyzicoRoutes = require('./routes/iyzico');
 const downloadRoutes = require('./routes/downloads');
+const licenseRoutes = require('./routes/license');
+
+// SMTP/DB gibi dış servislerle konuşan kütüphaneler bazen promise reddi dışında,
+// bağlantı temizliği sırasında gecikmeli bir 'error' event'i de yayınlayabiliyor.
+// Bu tür yakalanmamış hatalar dinleyicisiz kalırsa Node tüm süreci çökertir —
+// tek bir SMTP/DB hatası yüzünden sitenin tamamen düşmesini istemiyoruz.
+process.on('unhandledRejection', (err) => {
+  console.error('Yakalanmamış promise reddi:', err);
+});
+process.on('uncaughtException', (err) => {
+  console.error('Yakalanmamış istisna:', err);
+});
 
 const app = express();
 
@@ -31,8 +43,14 @@ app.use('/api/auth/forgot-password', authLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/shopier', shopierRoutes);
+app.use('/api/iyzico', iyzicoRoutes);
 app.use('/api/downloads', downloadRoutes);
+
+// Kurulu eklenti (Premiere Pro CEP paneli) bu uca file:// kökeninden erişir —
+// üstteki genel CORS politikası (sadece WEB_URL) burada geçerli olamaz. Bu uç
+// zaten oturum/çerez kullanmıyor, tek başına bilinmesi gereken bir license_key
+// ile korunuyor, bu yüzden kökeni serbest bırakmak güvenli.
+app.use('/api/license', cors({ origin: true }), licenseRoutes);
 
 app.use((req, res) => res.status(404).json({ error: 'Bulunamadı.' }));
 app.use(errorHandler);
