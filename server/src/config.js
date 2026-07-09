@@ -32,6 +32,15 @@ module.exports = {
     from: process.env.MAIL_FROM || 'Proces Media <no-reply@procesmedia.com>',
   },
   ownerEmail: process.env.OWNER_EMAIL || null,
+  // Şu an aktif olan ödeme sağlayıcısı — 'shopier' | 'iyzico'. Diğer sağlayıcının
+  // kodu/route'u kod tabanında kalır (kullanılmaz) ama silinmez, ileride tek bir
+  // env değişikliğiyle geri dönülebilsin diye.
+  paymentProvider: process.env.PAYMENT_PROVIDER || 'shopier',
+  shopier: {
+    apiKey: process.env.SHOPIER_API_KEY,
+    apiSecret: process.env.SHOPIER_API_SECRET,
+    websiteIndex: process.env.SHOPIER_WEBSITE_INDEX || '1',
+  },
   iyzico: {
     apiKey: process.env.IYZICO_API_KEY,
     secretKey: process.env.IYZICO_SECRET_KEY,

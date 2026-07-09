@@ -1,14 +1,17 @@
 const express = require('express');
 const db = require('../db');
+const config = require('../config');
 const { requireAuth } = require('../middleware/auth');
 const { initializeCheckoutForm } = require('../services/iyzico');
+const { buildPaymentFormFields } = require('../services/shopier');
 const { markOrderFailed } = require('../services/orderFulfillment');
 
 const router = express.Router();
 
-// Sepet: [{ productId, billingPeriod? }, ...] -> sipariş oluşturur ve iyzico
-// ödeme sayfası URL'ini döner. identityNumber/phone yalnızca ilk kez isteniyor
-// (hesapta yoksa) — iyzico'nun dolandırıcılık kontrolü için zorunlu tuttuğu alanlar.
+// Sepet: [{ productId, billingPeriod? }, ...] -> sipariş oluşturur ve aktif ödeme
+// sağlayıcısına (config.paymentProvider: 'shopier' | 'iyzico') göre ya Shopier form
+// alanlarını ya da iyzico ödeme sayfası URL'ini döner. identityNumber/phone yalnızca
+// iyzico aktifken isteniyor (Shopier'in klasik ödeme formu bunu zorunlu kılmıyor).
 router.post('/', requireAuth, async (req, res, next) => {
   const client = await db.pool.connect();
   try {
@@ -17,15 +20,22 @@ router.post('/', requireAuth, async (req, res, next) => {
       return res.status(400).json({ error: 'Sepet boş olamaz.' });
     }
 
+    const provider = config.paymentProvider;
+
     const { rows: buyerRows } = await client.query(
       'SELECT id, name, email, identity_number, phone FROM users WHERE id = $1',
       [req.user.id]
     );
     const buyer = buyerRows[0];
-    const resolvedIdentityNumber = identityNumber || buyer.identity_number;
-    const resolvedPhone = phone || buyer.phone;
-    if (!resolvedIdentityNumber || !resolvedPhone) {
-      return res.status(400).json({ error: 'Ödeme için TC Kimlik No ve telefon gereklidir.' });
+
+    let resolvedIdentityNumber = null;
+    let resolvedPhone = null;
+    if (provider === 'iyzico') {
+      resolvedIdentityNumber = identityNumber || buyer.identity_number;
+      resolvedPhone = phone || buyer.phone;
+      if (!resolvedIdentityNumber || !resolvedPhone) {
+        return res.status(400).json({ error: 'Ödeme için TC Kimlik No ve telefon gereklidir.' });
+      }
     }
 
     const productIds = items.map((i) => i.productId);
@@ -62,7 +72,7 @@ router.post('/', requireAuth, async (req, res, next) => {
 
     await client.query('BEGIN');
 
-    if (identityNumber || phone) {
+    if (provider === 'iyzico' && (identityNumber || phone)) {
       await client.query('UPDATE users SET identity_number = $1, phone = $2 WHERE id = $3', [
         resolvedIdentityNumber,
         resolvedPhone,
@@ -71,8 +81,8 @@ router.post('/', requireAuth, async (req, res, next) => {
     }
 
     const { rows: orderRows } = await client.query(
-      `INSERT INTO orders (user_id, status, total) VALUES ($1, 'pending', $2) RETURNING id, total`,
-      [req.user.id, total]
+      `INSERT INTO orders (user_id, status, total, payment_provider) VALUES ($1, 'pending', $2, $3) RETURNING id, total`,
+      [req.user.id, total, provider]
     );
     const order = orderRows[0];
 
@@ -83,6 +93,11 @@ router.post('/', requireAuth, async (req, res, next) => {
       );
     }
     await client.query('COMMIT');
+
+    if (provider === 'shopier') {
+      const payment = buildPaymentFormFields(order, buyer);
+      return res.status(201).json({ orderId: order.id, payment });
+    }
 
     try {
       const result = await initializeCheckoutForm({

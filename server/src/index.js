@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
 const iyzicoRoutes = require('./routes/iyzico');
+const shopierRoutes = require('./routes/shopier');
 const downloadRoutes = require('./routes/downloads');
 const licenseRoutes = require('./routes/license');
 
@@ -43,7 +44,10 @@ app.use('/api/auth/forgot-password', authLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
+// İkisi de mount edilir; sadece config.paymentProvider ile seçilen aktif sağlayıcı
+// yeni sipariş oluşturur, diğerinin callback'i trafik almaz ama kod hazır kalır.
 app.use('/api/iyzico', iyzicoRoutes);
+app.use('/api/shopier', shopierRoutes);
 app.use('/api/downloads', downloadRoutes);
 
 // Kurulu eklenti (Premiere Pro CEP paneli) bu uca file:// kökeninden erişir —

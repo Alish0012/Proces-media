@@ -11,8 +11,11 @@ import { apiFetch, ApiError } from '@/lib/api';
 
 type CheckoutResponse = {
   orderId: number;
-  paymentPageUrl: string;
+  paymentPageUrl?: string; // iyzico
+  payment?: { postUrl: string; fields: Record<string, string> }; // shopier
 };
+
+const PAYMENT_PROVIDER = process.env.NEXT_PUBLIC_PAYMENT_PROVIDER || 'shopier';
 
 export default function CartPage() {
   const { items, removeItem, total, clear } = useCart();
@@ -23,7 +26,10 @@ export default function CartPage() {
   const [identityNumber, setIdentityNumber] = useState('');
   const [phone, setPhone] = useState('');
 
-  const needsBuyerInfo = !!user && (!user.identity_number || !user.phone);
+  // TC Kimlik/telefon zorunluluğu iyzico'ya özgü (dolandırıcılık kontrolü) —
+  // Shopier'in klasik ödeme formu bu bilgileri istemiyor.
+  const needsBuyerInfo =
+    PAYMENT_PROVIDER === 'iyzico' && !!user && (!user.identity_number || !user.phone);
 
   async function handleCheckout() {
     setError(null);
@@ -50,7 +56,27 @@ export default function CartPage() {
       });
 
       clear();
-      window.location.href = data.paymentPageUrl;
+
+      if (data.paymentPageUrl) {
+        window.location.href = data.paymentPageUrl;
+        return;
+      }
+
+      if (data.payment) {
+        // Shopier'in ödeme formunu otomatik submit eden gizli bir form oluşturup yönlendiriyoruz.
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = data.payment.postUrl;
+        Object.entries(data.payment.fields).forEach(([key, value]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = String(value);
+          form.appendChild(input);
+        });
+        document.body.appendChild(form);
+        form.submit();
+      }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Sipariş oluşturulamadı.');
     } finally {
