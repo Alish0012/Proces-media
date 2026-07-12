@@ -3,9 +3,12 @@ import AnimatedHero from '@/components/AnimatedHero';
 import ProductCard, { Product } from '@/components/ProductCard';
 import ServiceCard from '@/components/ServiceCard';
 import BrandLogoMarquee from '@/components/BrandLogoMarquee';
+import InfluencerCard from '@/components/InfluencerCard';
 import PageTransition from '@/components/PageTransition';
+import Magnetic from '@/components/Magnetic';
 import { services } from '@/content/services';
 import { brands } from '@/content/brands';
+import { influencers } from '@/content/influencers';
 import { API_URL } from '@/lib/api';
 
 async function getFeaturedProducts(): Promise<Product[]> {
@@ -28,8 +31,8 @@ export default async function HomePage() {
 
       <section className="container-page py-24">
         <div className="mb-12 flex items-end justify-between">
-          <h2 className="text-3xl font-bold">
-            Öne Çıkan <span className="gradient-text">Eklentiler</span>
+          <h2 className="font-display text-3xl font-semibold">
+            Öne Çıkan <span className="text-brand-300">Eklentiler</span>
           </h2>
           <Link href="/urunler" className="text-sm text-brand-300 hover:text-brand-200">
             Tümünü Gör →
@@ -49,10 +52,10 @@ export default async function HomePage() {
         )}
       </section>
 
-      <section className="border-y border-white/5 bg-white/[0.02] py-24">
+      <section className="border-y border-white/10 bg-surface-band py-24">
         <div className="container-page">
-          <h2 className="mb-12 text-center text-3xl font-bold">
-            Neler <span className="gradient-text">Yapıyoruz</span>
+          <h2 className="font-display mb-12 text-center text-3xl font-semibold">
+            Neler <span className="text-accent-300">Yapıyoruz</span>
           </h2>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {services.slice(0, 3).map((s, i) => (
@@ -67,6 +70,39 @@ export default async function HomePage() {
           Birlikte çalıştığımız markalar
         </h2>
         <BrandLogoMarquee brands={brands} />
+      </section>
+
+      <section className="container-page py-24">
+        <div className="mb-12 flex items-end justify-between">
+          <h2 className="font-display text-3xl font-semibold">
+            Birlikte Çalıştığımız <span className="text-accent-300">Influencer&apos;lar</span>
+          </h2>
+          <Link href="/influencerlar" className="text-sm text-brand-300 hover:text-brand-200">
+            Tümünü Gör →
+          </Link>
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {influencers.slice(0, 4).map((influencer, i) => (
+            <InfluencerCard key={influencer.handle} influencer={influencer} index={i} />
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-white/10 bg-surface-band py-20">
+        <div className="container-page flex flex-col items-center gap-6 text-center">
+          <h2 className="font-display text-3xl font-semibold sm:text-4xl">
+            Görüşünüz <span className="text-brand-300">bizim için değerli</span>
+          </h2>
+          <p className="max-w-lg text-white/60">
+            Ürünlerimiz veya sitemiz hakkında bir öneriniz mi var? Ya da bir hata mı fark ettiniz?
+            Bize ulaştırın.
+          </p>
+          <Magnetic>
+            <Link href="/dilek-ve-oneri" className="btn-accent">
+              Dilek ve Öneri Gönder
+            </Link>
+          </Magnetic>
+        </div>
       </section>
     </PageTransition>
   );

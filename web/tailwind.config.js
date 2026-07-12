@@ -30,6 +30,21 @@ module.exports = {
           800: '#741917',
           900: '#571514',
         },
+        // Editoryal/koyu tema yüzeyleri: düz kart zemini ve bölüm ritmi için "bant" tonu
+        surface: {
+          DEFAULT: '#05060f',
+          card: '#10141c',
+          band: '#0d1b33',
+        },
+        // Referanstaki pastel kartların koyu temaya uyarlanmış, yumuşatılmış (muted) hali
+        tint: {
+          blue: '#16202e',
+          rose: '#241716',
+        },
+      },
+      fontFamily: {
+        display: ['var(--font-display)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
         'brand-radial': 'radial-gradient(circle at top, #205fc2 0%, #0b0f2b 60%)',

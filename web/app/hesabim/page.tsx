@@ -19,14 +19,14 @@ export default function AccountPage() {
   return (
     <PageTransition>
       <section className="container-page py-20">
-        <h1 className="text-4xl font-bold">
-          Hesabım<span className="gradient-text">.</span>
+        <h1 className="font-display text-4xl font-semibold sm:text-5xl">
+          Hesabım<span className="text-brand-300">.</span>
         </h1>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="card-glow mt-10 max-w-lg p-8"
+          className="card mt-10 max-w-lg p-8"
         >
           <p className="text-sm text-white/50">Ad Soyad</p>
           <p className="text-lg text-white">{user.name}</p>

@@ -12,6 +12,7 @@ const iyzicoRoutes = require('./routes/iyzico');
 const shopierRoutes = require('./routes/shopier');
 const downloadRoutes = require('./routes/downloads');
 const licenseRoutes = require('./routes/license');
+const feedbackRoutes = require('./routes/feedback');
 
 // SMTP/DB gibi dış servislerle konuşan kütüphaneler bazen promise reddi dışında,
 // bağlantı temizliği sırasında gecikmeli bir 'error' event'i de yayınlayabiliyor.
@@ -49,6 +50,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/iyzico', iyzicoRoutes);
 app.use('/api/shopier', shopierRoutes);
 app.use('/api/downloads', downloadRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 // Kurulu eklenti (Premiere Pro CEP paneli) bu uca file:// kökeninden erişir —
 // üstteki genel CORS politikası (sadece WEB_URL) burada geçerli olamaz. Bu uç

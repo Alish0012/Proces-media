@@ -46,7 +46,7 @@ export default function SubscriptionPlanSelector({ product }: { product: Product
         ))}
       </div>
 
-      <div className="mt-6 text-3xl font-bold text-white">
+      <div className="font-display mt-6 text-3xl font-semibold text-white">
         {Number(price).toLocaleString('tr-TR')} {product.currency}
         <span className="text-base font-normal text-white/50">
           {period === 'monthly' ? ' /ay' : ' /yıl'}

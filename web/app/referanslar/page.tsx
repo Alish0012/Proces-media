@@ -6,8 +6,8 @@ export default function ReferencesPage() {
   return (
     <PageTransition>
       <section className="container-page py-20">
-        <h1 className="text-4xl font-bold">
-          Referanslarımız<span className="gradient-text">.</span>
+        <h1 className="font-display text-4xl font-semibold sm:text-5xl">
+          Referanslarımız<span className="text-brand-300">.</span>
         </h1>
         <p className="mt-3 max-w-xl text-white/60">
           Birlikte çalışmaktan gurur duyduğumuz markalar.
@@ -21,7 +21,7 @@ export default function ReferencesPage() {
           {brands.map((brand) => (
             <div
               key={brand.name}
-              className="card-glow flex h-28 items-center justify-center p-6 text-center text-white/70"
+              className="card flex h-28 items-center justify-center p-6 text-center text-white/70"
             >
               <span className="font-semibold">{brand.name}</span>
             </div>

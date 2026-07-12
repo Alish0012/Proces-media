@@ -63,8 +63,8 @@ export default function MyProductsPage() {
   return (
     <PageTransition>
       <section className="container-page py-20">
-        <h1 className="text-4xl font-bold">
-          Ürünlerim<span className="gradient-text">.</span>
+        <h1 className="font-display text-4xl font-semibold sm:text-5xl">
+          Ürünlerim<span className="text-brand-300">.</span>
         </h1>
         <p className="mt-3 text-white/60">
           Satın aldığın eklentileri buradan indirebilirsin. Her indirme bağlantısı senin hesabına özel
@@ -87,9 +87,9 @@ export default function MyProductsPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.06 }}
-                  className="card-glow p-6"
+                  className="card p-6"
                 >
-                  <h3 className="text-lg font-semibold text-white">{p.name}</h3>
+                  <h3 className="font-display text-lg font-semibold text-white">{p.name}</h3>
                   {p.is_subscription && p.expires_at && (
                     <p className={`mt-1 text-xs ${expired ? 'text-red-400' : 'text-white/40'}`}>
                       {expired ? 'Süresi doldu: ' : 'Bitiş: '}

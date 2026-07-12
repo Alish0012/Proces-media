@@ -6,8 +6,8 @@ export default function ServicesPage() {
   return (
     <PageTransition>
       <section className="container-page py-20">
-        <h1 className="text-4xl font-bold">
-          Hizmetlerimiz<span className="gradient-text">.</span>
+        <h1 className="font-display text-4xl font-semibold sm:text-5xl">
+          Hizmetlerimiz<span className="text-brand-300">.</span>
         </h1>
         <p className="mt-3 max-w-xl text-white/60">
           Eklenti geliştirmenin ötesinde, markanızın dijital ihtiyaçlarına uçtan uca çözümler

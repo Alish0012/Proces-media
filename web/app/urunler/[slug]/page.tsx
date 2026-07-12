@@ -24,7 +24,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   return (
     <PageTransition>
       <section className="container-page grid gap-12 py-20 lg:grid-cols-2">
-        <div className="flex h-80 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-700/40 to-brand-900/40 text-6xl">
+        <div className="flex h-80 items-center justify-center rounded-2xl border border-white/10 bg-tint-blue text-6xl">
           {product.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -38,7 +38,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </div>
 
         <div>
-          <h1 className="text-3xl font-bold sm:text-4xl">{product.name}</h1>
+          <h1 className="font-display text-3xl font-semibold sm:text-4xl">{product.name}</h1>
           <p className="mt-4 text-lg leading-relaxed text-white/60">{product.description}</p>
 
           {product.is_subscription ? (
@@ -47,7 +47,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </div>
           ) : (
             <>
-              <div className="mt-8 text-3xl font-bold text-white">
+              <div className="font-display mt-8 text-3xl font-semibold text-white">
                 {Number(product.price).toLocaleString('tr-TR')} {product.currency}
               </div>
 

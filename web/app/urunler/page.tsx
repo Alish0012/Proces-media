@@ -19,8 +19,8 @@ export default async function ProductsPage() {
   return (
     <PageTransition>
       <section className="container-page py-20">
-        <h1 className="text-4xl font-bold">
-          Tüm <span className="gradient-text">Eklentiler</span>
+        <h1 className="font-display text-4xl font-semibold sm:text-5xl">
+          Tüm <span className="text-brand-300">Eklentiler</span>
         </h1>
         <p className="mt-3 max-w-xl text-white/60">
           Geliştirdiğimiz eklentileri inceleyin, satın alın ve hesabınıza bağlı üye panelinden anında

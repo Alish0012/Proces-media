@@ -32,7 +32,7 @@ export default function StatCounter({
   return (
     <motion.div whileHover={{ scale: 1.06 }} className="text-center">
       <div
-        className={`text-4xl font-bold sm:text-5xl ${
+        className={`font-display text-4xl font-semibold sm:text-5xl ${
           color === 'accent' ? 'text-accent-400' : 'text-white'
         }`}
       >

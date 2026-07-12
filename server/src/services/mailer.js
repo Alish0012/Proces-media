@@ -65,4 +65,25 @@ async function sendNewSaleNotification(ownerEmail, { buyerEmail, buyerName, orde
   });
 }
 
-module.exports = { sendPasswordResetEmail, sendPurchaseConfirmationEmail, sendNewSaleNotification };
+const CATEGORY_LABELS = { oneri: 'Öneri', hata: 'Hata Bildirimi', diger: 'Diğer' };
+
+async function sendFeedbackNotification(ownerEmail, { name, email, category, message }) {
+  await transporter.sendMail({
+    from: config.smtp.from,
+    to: ownerEmail,
+    subject: `Yeni ${CATEGORY_LABELS[category] || category} - Dilek ve Öneri`,
+    html: `
+      <p><strong>Gönderen:</strong> ${name} (${email})</p>
+      <p><strong>Konu:</strong> ${CATEGORY_LABELS[category] || category}</p>
+      <p><strong>Mesaj:</strong></p>
+      <p>${message.replace(/\n/g, '<br>')}</p>
+    `,
+  });
+}
+
+module.exports = {
+  sendPasswordResetEmail,
+  sendPurchaseConfirmationEmail,
+  sendNewSaleNotification,
+  sendFeedbackNotification,
+};

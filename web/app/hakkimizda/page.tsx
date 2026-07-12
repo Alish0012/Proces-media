@@ -5,8 +5,8 @@ export default function AboutPage() {
   return (
     <PageTransition>
       <section className="container-page py-20">
-        <h1 className="text-4xl font-bold">
-          Hakkımızda<span className="gradient-text">.</span>
+        <h1 className="font-display text-4xl font-semibold sm:text-5xl">
+          Hakkımızda<span className="text-accent-300">.</span>
         </h1>
 
         <div className="mt-8 grid gap-12 lg:grid-cols-2">
@@ -27,7 +27,7 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="card-glow grid grid-cols-2 gap-8 p-10">
+          <div className="card grid grid-cols-2 gap-8 p-10">
             <StatCounter value={12} suffix="+" label="Yayınlanan Eklenti" color="brand" />
             <StatCounter value={40} suffix="+" label="Mutlu Müşteri" color="accent" />
             <StatCounter value={99} suffix="%" label="Destek Memnuniyeti" color="brand" />

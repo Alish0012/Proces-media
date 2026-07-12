@@ -57,10 +57,10 @@ function ResetPasswordForm() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="card-glow w-full max-w-md p-8"
+          className="card w-full max-w-md p-8"
         >
-          <h1 className="text-2xl font-bold">
-            Şifre <span className="gradient-text">Sıfırla</span>
+          <h1 className="font-display text-2xl font-semibold">
+            Şifre <span className="text-brand-300">Sıfırla</span>
           </h1>
 
           <div className="mt-6">

@@ -39,10 +39,10 @@ export default function RegisterPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="card-glow w-full max-w-md p-8"
+          className="card w-full max-w-md p-8"
         >
-          <h1 className="text-2xl font-bold">
-            Kayıt <span className="gradient-text">Ol</span>
+          <h1 className="font-display text-2xl font-semibold">
+            Kayıt <span className="text-brand-300">Ol</span>
           </h1>
 
           <div className="mt-8 space-y-4">

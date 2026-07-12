@@ -6,8 +6,8 @@ import type { Brand } from '@/content/brands';
 function BrandPill({ brand }: { brand: Brand }) {
   return (
     <motion.div
-      whileHover={{ y: -3, scale: 1.05 }}
-      className="mx-4 flex h-16 min-w-[160px] items-center justify-center rounded-xl border border-white/10 bg-white/5 px-6 text-white/70 transition-colors duration-300 hover:border-accent-400/50 hover:bg-white/[0.08] hover:text-white"
+      whileHover={{ y: -3 }}
+      className="mx-4 flex h-16 min-w-[160px] items-center justify-center rounded-xl border border-white/10 bg-surface-card px-6 text-white/70 transition-colors duration-300 hover:border-white/25 hover:text-white"
     >
       {brand.logoUrl ? (
         // eslint-disable-next-line @next/next/no-img-element

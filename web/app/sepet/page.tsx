@@ -87,8 +87,8 @@ export default function CartPage() {
   return (
     <PageTransition>
       <section className="container-page py-20">
-        <h1 className="text-4xl font-bold">
-          Sepetim<span className="gradient-text">.</span>
+        <h1 className="font-display text-4xl font-semibold sm:text-5xl">
+          Sepetim<span className="text-accent-300">.</span>
         </h1>
 
         {items.length === 0 ? (
@@ -108,7 +108,7 @@ export default function CartPage() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
-                    className="card-glow flex items-center justify-between p-5"
+                    className="card flex items-center justify-between p-5"
                   >
                     <div>
                       <p className="font-medium text-white">
@@ -134,7 +134,7 @@ export default function CartPage() {
               </AnimatePresence>
             </div>
 
-            <div className="card-glow h-fit p-6">
+            <div className="card h-fit p-6">
               <div className="flex items-center justify-between text-lg">
                 <span className="text-white/60">Toplam</span>
                 <span className="font-bold text-white">{total.toLocaleString('tr-TR')} TRY</span>

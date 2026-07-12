@@ -6,13 +6,61 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
+import Magnetic from './Magnetic';
 
-const links = [
+const primaryLinks = [
   { href: '/urunler', label: 'Ürünler' },
   { href: '/hizmetlerimiz', label: 'Hizmetlerimiz' },
-  { href: '/hakkimizda', label: 'Hakkımızda' },
-  { href: '/referanslar', label: 'Referanslar' },
 ];
+
+const aboutLinks = [
+  { href: '/referanslar', label: 'Referanslar' },
+  { href: '/influencerlar', label: "Influencer'lar" },
+  { href: '/dilek-ve-oneri', label: 'Dilek & Öneri' },
+];
+
+const allLinks = [...primaryLinks, { href: '/hakkimizda', label: 'Hakkımızda' }, ...aboutLinks];
+
+function AboutDropdown() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <Link href="/hakkimizda" className="nav-link flex items-center gap-1">
+        Hakkımızda
+        <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-xs">
+          ▾
+        </motion.span>
+      </Link>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.18 }}
+            className="absolute left-1/2 top-full z-20 mt-3 w-48 -translate-x-1/2 rounded-2xl border border-white/10 bg-surface-card p-2"
+          >
+            {aboutLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="block rounded-xl px-3 py-2 text-sm text-white/70 transition hover:bg-white/5 hover:text-white"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -20,25 +68,26 @@ export default function Navbar() {
   const { items } = useCart();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 bg-[#05060f]/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-surface/80 backdrop-blur-md">
       <div className="container-page flex h-16 items-center justify-between">
-        <Link href="/" className="group flex items-center gap-2 text-lg font-bold tracking-tight">
+        <Link href="/" className="group flex items-center gap-2 text-lg font-semibold tracking-tight">
           <motion.span
-            className="inline-flex items-center gap-2"
-            whileHover={{ scale: 1.06, rotate: -2 }}
+            className="font-display inline-flex items-center gap-2"
+            whileHover={{ scale: 1.04 }}
             transition={{ type: 'spring', stiffness: 300 }}
           >
-            <Image src="/logo.png" alt="Proces Media" width={36} height={36} className="rounded-lg" priority />
-            Proces<span className="gradient-text">Media</span>
+            <Image src="/logo.png" alt="Proces Media" width={34} height={34} className="rounded-lg" priority />
+            Proces<span className="text-brand-300">Media</span>
           </motion.span>
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
-          {links.map((link) => (
-            <Link key={link.href} href={link.href} className="nav-link">
+        <nav className="hidden items-center gap-6 md:flex">
+          {primaryLinks.map((link) => (
+            <Link key={link.href} href={link.href} className="nav-link whitespace-nowrap">
               {link.label}
             </Link>
           ))}
+          <AboutDropdown />
         </nav>
 
         <div className="hidden items-center gap-4 md:flex">
@@ -49,7 +98,7 @@ export default function Navbar() {
                 key={items.length}
                 initial={{ scale: 0.5 }}
                 animate={{ scale: 1 }}
-                className="absolute -right-3 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-accent-500 text-xs shadow-md shadow-accent-500/50"
+                className="absolute -right-3 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-accent-500 text-xs"
               >
                 {items.length}
               </motion.span>
@@ -69,9 +118,11 @@ export default function Navbar() {
               <Link href="/giris" className="nav-link">
                 Giriş Yap
               </Link>
-              <Link href="/kayit" className="btn-primary !px-4 !py-2 text-sm">
-                Kayıt Ol
-              </Link>
+              <Magnetic strength={0.25}>
+                <Link href="/kayit" className="btn-primary !px-4 !py-2 text-sm">
+                  Kayıt Ol
+                </Link>
+              </Magnetic>
             </>
           )}
         </div>
@@ -94,10 +145,10 @@ export default function Navbar() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="overflow-hidden border-t border-white/5 md:hidden"
+            className="overflow-hidden border-t border-white/10 md:hidden"
           >
             <div className="container-page flex flex-col gap-4 py-4">
-              {links.map((link) => (
+              {allLinks.map((link) => (
                 <Link key={link.href} href={link.href} onClick={() => setOpen(false)}>
                   {link.label}
                 </Link>

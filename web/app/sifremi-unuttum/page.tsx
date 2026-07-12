@@ -37,10 +37,10 @@ export default function ForgotPasswordPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="card-glow w-full max-w-md p-8"
+          className="card w-full max-w-md p-8"
         >
-          <h1 className="text-2xl font-bold">
-            Şifremi <span className="gradient-text">Unuttum</span>
+          <h1 className="font-display text-2xl font-semibold">
+            Şifremi <span className="text-brand-300">Unuttum</span>
           </h1>
           <p className="mt-3 text-sm text-white/60">
             Hesabına kayıtlı e-posta adresini gir, sana şifre sıfırlama bağlantısı gönderelim.
