@@ -6,6 +6,7 @@ const transporter = nodemailer.createTransport({
   port: config.smtp.port,
   secure: config.smtp.port === 465,
   auth: config.smtp.user ? { user: config.smtp.user, pass: config.smtp.pass } : undefined,
+  family: 4,
 });
 
 async function sendPasswordResetEmail(toEmail, resetUrl) {

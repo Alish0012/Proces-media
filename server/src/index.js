@@ -1,3 +1,9 @@
+const dns = require('dns');
+// Railway'in konteyner ağı SMTP gibi dış servisler için AAAA (IPv6) kaydına
+// yönlendirilen bağlantıları kabul etmiyor (ENETUNREACH) — Node'un varsayılan
+// "happy eyeballs" sıralamasını IPv4 öncelikli yaparak bunu önlüyoruz.
+dns.setDefaultResultOrder('ipv4first');
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
