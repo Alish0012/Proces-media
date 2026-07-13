@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/auth-context';
 import { useCart } from '@/lib/cart-context';
+import { SHOW_INFLUENCERS } from '@/lib/featureFlags';
 import Magnetic from './Magnetic';
 
 const primaryLinks = [
@@ -15,7 +16,7 @@ const primaryLinks = [
 
 const aboutLinks = [
   { href: '/referanslar', label: 'Referanslar' },
-  { href: '/influencerlar', label: "Influencer'lar" },
+  ...(SHOW_INFLUENCERS ? [{ href: '/influencerlar', label: "Influencer'lar" }] : []),
   { href: '/dilek-ve-oneri', label: 'Dilek & Öneri' },
 ];
 

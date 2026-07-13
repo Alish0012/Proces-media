@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { SHOW_INFLUENCERS } from '@/lib/featureFlags';
 
 export default function Footer() {
   return (
@@ -22,9 +23,11 @@ export default function Footer() {
           <Link href="/referanslar" className="hover:text-white">
             Referanslar
           </Link>
-          <Link href="/influencerlar" className="hover:text-white">
-            Influencer&apos;lar
-          </Link>
+          {SHOW_INFLUENCERS && (
+            <Link href="/influencerlar" className="hover:text-white">
+              Influencer&apos;lar
+            </Link>
+          )}
           <Link href="/dilek-ve-oneri" className="hover:text-white">
             Dilek &amp; Öneri
           </Link>

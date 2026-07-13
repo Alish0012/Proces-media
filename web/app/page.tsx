@@ -10,6 +10,7 @@ import { services } from '@/content/services';
 import { brands } from '@/content/brands';
 import { influencers } from '@/content/influencers';
 import { API_URL } from '@/lib/api';
+import { SHOW_INFLUENCERS } from '@/lib/featureFlags';
 
 async function getFeaturedProducts(): Promise<Product[]> {
   try {
@@ -72,21 +73,23 @@ export default async function HomePage() {
         <BrandLogoMarquee brands={brands} />
       </section>
 
-      <section className="container-page py-24">
-        <div className="mb-12 flex items-end justify-between">
-          <h2 className="font-display text-3xl font-semibold">
-            Birlikte Çalıştığımız <span className="text-accent-300">Influencer&apos;lar</span>
-          </h2>
-          <Link href="/influencerlar" className="text-sm text-brand-300 hover:text-brand-200">
-            Tümünü Gör →
-          </Link>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {influencers.slice(0, 4).map((influencer, i) => (
-            <InfluencerCard key={influencer.handle} influencer={influencer} index={i} />
-          ))}
-        </div>
-      </section>
+      {SHOW_INFLUENCERS && (
+        <section className="container-page py-24">
+          <div className="mb-12 flex items-end justify-between">
+            <h2 className="font-display text-3xl font-semibold">
+              Birlikte Çalıştığımız <span className="text-accent-300">Influencer&apos;lar</span>
+            </h2>
+            <Link href="/influencerlar" className="text-sm text-brand-300 hover:text-brand-200">
+              Tümünü Gör →
+            </Link>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {influencers.slice(0, 4).map((influencer, i) => (
+              <InfluencerCard key={influencer.handle} influencer={influencer} index={i} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="border-y border-white/10 bg-surface-band py-20">
         <div className="container-page flex flex-col items-center gap-6 text-center">
