@@ -5,29 +5,63 @@ const config = require('../config');
 // nodemailer, SMTP host'unu çözerken IPv4 ve IPv6 adresleri arasından RASTGELE
 // seçim yapıyor (lib/shared/index.js, Math.random()) — IPv4 önce listelense bile.
 // Railway'in konteyner ağı IPv6 egress desteklemediği için bu seçim yaklaşık
-// yarı yarıya ENETUNREACH ile başarısız oluyordu. Host'u kendimiz IPv4'e
-// çözüp doğrudan IP olarak veriyoruz (nodemailer, host zaten bir IP ise kendi
-// DNS seçimini atlıyor); TLS sertifika doğrulaması için servername korunuyor.
-function getTransporter() {
+// yarı yarıya ENETUNREACH ile başarısız oluyordu. Ayrıca Gmail'in birden fazla
+// IPv4 cephe sunucusundan biri Railway ağından zaman zaman ETIMEDOUT veriyor
+// (varsayılan connectionTimeout 2 dakika). Bu yüzden host'u kendimiz IPv4'e
+// çözüp TÜM adayları kısa timeout'la sırayla deniyoruz — biri yanıt vermezse
+// hızlıca bir sonrakine geçiyoruz. TLS sertifika doğrulaması için servername
+// (gerçek hostname) korunuyor.
+function resolve4(hostname) {
   return new Promise((resolve) => {
-    dns.resolve4(config.smtp.host, (err, addresses) => {
-      const host = !err && addresses && addresses.length ? addresses[0] : config.smtp.host;
-      resolve(
-        nodemailer.createTransport({
-          host,
-          port: config.smtp.port,
-          secure: config.smtp.port === 465,
-          auth: config.smtp.user ? { user: config.smtp.user, pass: config.smtp.pass } : undefined,
-          tls: { servername: config.smtp.host },
-        })
-      );
+    dns.resolve4(hostname, (err, addresses) => resolve(err ? [] : addresses || []));
+  });
+}
+
+function lookup4(hostname) {
+  return new Promise((resolve) => {
+    dns.lookup(hostname, { family: 4, all: true }, (err, addresses) => {
+      resolve(err ? [] : (addresses || []).map((a) => a.address));
     });
   });
 }
 
+// İki farklı çözümleyiciyi (c-ares tabanlı resolve4 + OS/getaddrinfo tabanlı
+// lookup) birleştirip tekilleştiriyoruz — biri diğer ağdan/DNS'ten dönmeyebilir,
+// birden fazla aday IP de tek istekte deneme/geçiş şansını artırır.
+async function resolveIPv4Candidates(hostname) {
+  const [a, b] = await Promise.all([resolve4(hostname), lookup4(hostname)]);
+  const merged = [...new Set([...a, ...b])];
+  return merged.length ? merged : [hostname];
+}
+
+async function sendWithRetry(mailOptions) {
+  const candidates = await resolveIPv4Candidates(config.smtp.host);
+  let lastErr;
+
+  for (const host of candidates) {
+    const transporter = nodemailer.createTransport({
+      host,
+      port: config.smtp.port,
+      secure: config.smtp.port === 465,
+      auth: config.smtp.user ? { user: config.smtp.user, pass: config.smtp.pass } : undefined,
+      tls: { servername: config.smtp.host },
+      connectionTimeout: 8000,
+    });
+
+    try {
+      return await transporter.sendMail(mailOptions);
+    } catch (err) {
+      lastErr = err;
+    } finally {
+      transporter.close();
+    }
+  }
+
+  throw lastErr;
+}
+
 async function sendPasswordResetEmail(toEmail, resetUrl) {
-  const transporter = await getTransporter();
-  await transporter.sendMail({
+  await sendWithRetry({
     from: config.smtp.from,
     to: toEmail,
     subject: 'Proces Media - Şifre Sıfırlama',
@@ -53,9 +87,8 @@ function formatItem(item) {
 async function sendPurchaseConfirmationEmail(toEmail, { orderId, total, items }) {
   const itemList = items.map(formatItem).join('');
   const downloadUrl = `${config.webUrl}/hesabim/urunlerim`;
-  const transporter = await getTransporter();
 
-  await transporter.sendMail({
+  await sendWithRetry({
     from: config.smtp.from,
     to: toEmail,
     subject: `Proces Media - Siparişiniz Alındı (#${orderId})`,
@@ -70,9 +103,8 @@ async function sendPurchaseConfirmationEmail(toEmail, { orderId, total, items })
 
 async function sendNewSaleNotification(ownerEmail, { buyerEmail, buyerName, orderId, total, items }) {
   const itemList = items.map(formatItem).join('');
-  const transporter = await getTransporter();
 
-  await transporter.sendMail({
+  await sendWithRetry({
     from: config.smtp.from,
     to: ownerEmail,
     subject: `Yeni satış! Sipariş #${orderId}`,
@@ -88,8 +120,7 @@ async function sendNewSaleNotification(ownerEmail, { buyerEmail, buyerName, orde
 const CATEGORY_LABELS = { oneri: 'Öneri', hata: 'Hata Bildirimi', diger: 'Diğer' };
 
 async function sendFeedbackNotification(ownerEmail, { name, email, category, message }) {
-  const transporter = await getTransporter();
-  await transporter.sendMail({
+  await sendWithRetry({
     from: config.smtp.from,
     to: ownerEmail,
     subject: `Yeni ${CATEGORY_LABELS[category] || category} - Dilek ve Öneri`,
