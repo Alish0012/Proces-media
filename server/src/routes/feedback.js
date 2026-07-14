@@ -1,13 +1,13 @@
 const express = require('express');
 const db = require('../db');
 const config = require('../config');
-const { optionalAuth } = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 const { sendFeedbackNotification } = require('../services/mailer');
 
 const router = express.Router();
 const VALID_CATEGORIES = ['oneri', 'hata', 'diger'];
 
-router.post('/', optionalAuth, async (req, res, next) => {
+router.post('/', requireAuth, async (req, res, next) => {
   try {
     const { name, email, category, message } = req.body;
 
@@ -19,7 +19,7 @@ router.post('/', optionalAuth, async (req, res, next) => {
     await db.query(
       `INSERT INTO feedback_messages (user_id, name, email, category, message)
        VALUES ($1, $2, $3, $4, $5)`,
-      [req.user?.id || null, name, email, safeCategory, message]
+      [req.user.id, name, email, safeCategory, message]
     );
 
     if (config.ownerEmail) {

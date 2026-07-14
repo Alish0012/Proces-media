@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import PageTransition from '@/components/PageTransition';
 import { useAuth } from '@/lib/auth-context';
@@ -15,7 +16,8 @@ const categories: { value: Category; label: string }[] = [
 ];
 
 export default function FeedbackPage() {
-  const { user, token } = useAuth();
+  const { user, token, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [category, setCategory] = useState<Category>('oneri');
@@ -25,11 +27,17 @@ export default function FeedbackPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (!authLoading && !user) router.push('/giris?next=/dilek-ve-oneri');
+  }, [authLoading, user, router]);
+
+  useEffect(() => {
     if (user) {
       setName(user.name);
       setEmail(user.email);
     }
   }, [user]);
+
+  if (authLoading || !user) return null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
