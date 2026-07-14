@@ -1,15 +1,32 @@
+const dns = require('dns');
 const nodemailer = require('nodemailer');
 const config = require('../config');
 
-const transporter = nodemailer.createTransport({
-  host: config.smtp.host,
-  port: config.smtp.port,
-  secure: config.smtp.port === 465,
-  auth: config.smtp.user ? { user: config.smtp.user, pass: config.smtp.pass } : undefined,
-  family: 4,
-});
+// nodemailer, SMTP host'unu çözerken IPv4 ve IPv6 adresleri arasından RASTGELE
+// seçim yapıyor (lib/shared/index.js, Math.random()) — IPv4 önce listelense bile.
+// Railway'in konteyner ağı IPv6 egress desteklemediği için bu seçim yaklaşık
+// yarı yarıya ENETUNREACH ile başarısız oluyordu. Host'u kendimiz IPv4'e
+// çözüp doğrudan IP olarak veriyoruz (nodemailer, host zaten bir IP ise kendi
+// DNS seçimini atlıyor); TLS sertifika doğrulaması için servername korunuyor.
+function getTransporter() {
+  return new Promise((resolve) => {
+    dns.resolve4(config.smtp.host, (err, addresses) => {
+      const host = !err && addresses && addresses.length ? addresses[0] : config.smtp.host;
+      resolve(
+        nodemailer.createTransport({
+          host,
+          port: config.smtp.port,
+          secure: config.smtp.port === 465,
+          auth: config.smtp.user ? { user: config.smtp.user, pass: config.smtp.pass } : undefined,
+          tls: { servername: config.smtp.host },
+        })
+      );
+    });
+  });
+}
 
 async function sendPasswordResetEmail(toEmail, resetUrl) {
+  const transporter = await getTransporter();
   await transporter.sendMail({
     from: config.smtp.from,
     to: toEmail,
@@ -36,6 +53,7 @@ function formatItem(item) {
 async function sendPurchaseConfirmationEmail(toEmail, { orderId, total, items }) {
   const itemList = items.map(formatItem).join('');
   const downloadUrl = `${config.webUrl}/hesabim/urunlerim`;
+  const transporter = await getTransporter();
 
   await transporter.sendMail({
     from: config.smtp.from,
@@ -52,6 +70,7 @@ async function sendPurchaseConfirmationEmail(toEmail, { orderId, total, items })
 
 async function sendNewSaleNotification(ownerEmail, { buyerEmail, buyerName, orderId, total, items }) {
   const itemList = items.map(formatItem).join('');
+  const transporter = await getTransporter();
 
   await transporter.sendMail({
     from: config.smtp.from,
@@ -69,6 +88,7 @@ async function sendNewSaleNotification(ownerEmail, { buyerEmail, buyerName, orde
 const CATEGORY_LABELS = { oneri: 'Öneri', hata: 'Hata Bildirimi', diger: 'Diğer' };
 
 async function sendFeedbackNotification(ownerEmail, { name, email, category, message }) {
+  const transporter = await getTransporter();
   await transporter.sendMail({
     from: config.smtp.from,
     to: ownerEmail,
